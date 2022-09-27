@@ -1,0 +1,58 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+.img-fluid{
+    width: 100px;
+}
+
+
+header{
+    background-color: burlywood;
+    display:flex;
+    width: 100%;
+    height: 100%;
+    gap: 30px;
+    margin: 0%;
+    
+    
+}
+
+.main-nav{
+    display: flex;
+    text-align: end;
+    grid-gap:20 px;
+    gap: 20px;
+  
+
+}
+
+.menu{
+    display: flex;
+    list-style-type: none; 
+    gap: 30px;
+    align-items: center;
+    height: 100%;
+    font-family: 'Bungee Spice';
+ 
+
+}
+
+
+
+
+
+.a1{
+    font-family: 'Bungee Spice';
+    text-decoration: none;
+    font-size: 30px;
+    color: black;
+    text-align: center;
+}

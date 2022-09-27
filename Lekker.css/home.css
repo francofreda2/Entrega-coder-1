@@ -1,0 +1,31 @@
+
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+.lekkerportada{
+    background-image: url("portadalekker.jpg");
+    background-repeat: no-repeat;
+    background-size: cover; 
+    background-position: center center;
+    display: flex; 
+
+    height: 100vh;
+ 
+ }
+ 

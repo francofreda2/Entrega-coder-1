@@ -1,0 +1,40 @@
+
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+.titulodesabores{
+    font-family: impact;
+    font-size: 60px;
+    font-weight: bold;
+    list-style-type: none; /* sin viñetas */
+    text-align: center;
+
+
+}
+
+.lista-sabores{
+    font-family: helvetica;
+    font-size: 30px;
+    font-weight: bold;
+    list-style-type: none; 
+    text-align: center;
+    margin: 5px; 
+    padding: 2px;
+    box-shadow: black;
+    grid-gap:20 px;
+    gap: 4px;
+   
+}
+
+
+
+
+
+.ul-sabores{
+    list-style-type: none;
+    background-color:burlywood ;
+
+}

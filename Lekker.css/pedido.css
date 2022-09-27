@@ -1,0 +1,27 @@
+
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+
+.legend{
+    font-size: 40px;
+    text-align: center;
+    font-weight: bold;
+
+}
+
+
+.fieldset{
+    font-size: 25PX;
+    font-family:  'Arial Narrow Bold';
+    border: 5px solid ;
+}
+
+
+#enviar-pedido{
+    font-size: 15px;
+    font-family:  'Arial Narrow Bold';
+}

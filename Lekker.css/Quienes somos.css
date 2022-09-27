@@ -1,0 +1,46 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+    background: rgba(10, 46, 74, 0.758);
+    color: rgb(1, 6, 9);
+}
+
+
+.p-historia{
+    Font-family: 'Dangrek', cursive;
+    text-decoration: none;
+    font-size: 40px;
+    font-weight: bold;
+
+}
+
+.article-historia{
+    font-family: 'Dangrek', cursive;
+    text-decoration: none;
+    font-size: 30px;
+
+}
+
+.snikker{
+    width: 500px;
+    height: 500px;
+    border: 5px solid;
+}
+
+.Rocher{
+    width: 500px;
+    height: 500px;
+    border: 5px solid;
+}
+
+
+.items-home{
+    Font-family: 'Dangrek', cursive;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+}
