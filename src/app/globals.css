@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Prose overrides para el resultado del LLM */
+.prose table {
+  font-size: 0.75rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+.prose th, .prose td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  text-align: left;
+}
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+.prose pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
