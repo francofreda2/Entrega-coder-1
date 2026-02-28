@@ -1,64 +1,40 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "PM Copilot",
-  description: "Transformá la descripción de tu proyecto en artefactos de project management completos",
+  description: "Asistente de project management basado en IA",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="font-sans bg-slate-50 min-h-screen">
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PM</span>
-              </div>
-              <div>
-                <span className="font-bold text-slate-800">PM Copilot</span>
-                <span className="text-xs text-slate-500 ml-2 hidden sm:inline">
-                  Asistente de Project Management
-                </span>
-              </div>
-            </div>
-            <nav className="flex items-center gap-4 text-sm">
-              <a
-                href="/"
-                className="text-slate-600 hover:text-blue-600 font-medium transition-colors"
-              >
+      <body className="font-sans bg-gray-50 min-h-screen">
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 font-bold text-gray-800 hover:text-blue-600 transition-colors">
+              <span className="text-xl">🧭</span>
+              <span>PM Copilot</span>
+            </Link>
+            <nav className="flex items-center gap-6 text-sm">
+              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Nueva propuesta
-              </a>
-              <a
-                href="/history"
-                className="text-slate-600 hover:text-blue-600 font-medium transition-colors"
-              >
+              </Link>
+              <Link href="/history" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Historial
-              </a>
-              <a
-                href="/knowledge"
-                className="text-slate-600 hover:text-blue-600 font-medium transition-colors"
-              >
+              </Link>
+              <Link href="/settings" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Base de conocimiento
-              </a>
+              </Link>
             </nav>
           </div>
         </header>
-
-        {/* Contenido principal */}
-        <main className="max-w-6xl mx-auto px-4 py-8">
-          {children}
-        </main>
-
-        {/* Footer */}
-        <footer className="border-t border-slate-200 mt-16 py-6 text-center text-xs text-slate-400">
-          PM Copilot — Potenciado por Claude (Anthropic)
+        <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+        <footer className="border-t border-gray-200 mt-16">
+          <div className="max-w-5xl mx-auto px-4 py-4 text-center text-xs text-gray-400">
+            PM Copilot · Propuestas de PM generadas con IA · Las propuestas son puntos de partida y deben ser validadas con el equipo.
+          </div>
         </footer>
       </body>
     </html>

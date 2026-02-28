@@ -1,78 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { GenerateRequest, GenerateResponse, StoredProposal, ApiError } from "@/types";
-import { generateProposal, LLMError } from "@/lib/llm";
-import { saveProposal } from "@/lib/storage";
+import { v4 as uuidv4 } from "uuid";
+import { generateWithLLM } from "@/lib/llm";
+import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/prompts";
+import { saveProposal, readKnowledge } from "@/lib/storage";
+import { ProjectInput, StoredProposal } from "@/types";
+import { PMCopilotError } from "@/lib/errors";
 
 export async function POST(req: NextRequest) {
   try {
-    const body: GenerateRequest = await req.json();
+    const body = await req.json();
+    const input = body as ProjectInput;
 
-    if (!body.input?.description?.trim()) {
-      const error: ApiError = {
-        error: "La descripción del proyecto es requerida.",
-        code: "UNKNOWN",
-      };
-      return NextResponse.json(error, { status: 400 });
+    if (!input.description?.trim()) {
+      return NextResponse.json({ error: "La descripción del proyecto es requerida." }, { status: 400 });
     }
 
-    // ── Llamar al LLM ──────────────────────────────────────────────────────
-    const rawMarkdown = await generateProposal(body.input);
+    const knowledgeDocs = readKnowledge();
+    const userPrompt = buildUserPrompt(input, knowledgeDocs);
+    const rawMarkdown = await generateWithLLM(SYSTEM_PROMPT, userPrompt);
 
-    // ── Derivar nombre del proyecto (primeras 6 palabras de la descripción) ─
+    // Extraer nombre del proyecto de las primeras palabras de la descripción
     const projectName =
-      body.input.description
-        .trim()
-        .split(/\s+/)
-        .slice(0, 6)
-        .join(" ")
-        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s0-9\-()]/g, "")
-        .trim() || "Proyecto sin nombre";
+      input.description.trim().split(/\s+/).slice(0, 8).join(" ") +
+      (input.description.trim().split(/\s+/).length > 8 ? "..." : "");
 
-    // ── Construir la propuesta ─────────────────────────────────────────────
     const proposal: StoredProposal = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       createdAt: new Date().toISOString(),
       projectName,
-      input: body.input,
-      output: {
-        // El Markdown completo es la fuente de verdad.
-        // En una versión futura se puede parsear el MD para llenar los campos
-        // estructurados (wbsTable, risks[], etc.) y habilitar filtros/búsquedas.
-        executiveSummary: "",
-        generalObjective: "",
-        specificObjectives: [],
-        scope: { includes: [], excludes: [] },
-        assumptions: [],
-        constraints: [],
-        wbsTree: "",
-        wbsTable: [],
-        deliverables: [],
-        milestones: [],
-        risks: [],
-        kpis: [],
-        pendingValidations: [],
-        rawMarkdown,
-      },
+      input,
+      output: { rawMarkdown },
     };
 
-    // ── Persistir en historial ─────────────────────────────────────────────
-    await saveProposal(proposal);
+    saveProposal(proposal);
 
-    const response: GenerateResponse = { proposal };
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json({ proposal });
   } catch (err) {
-    if (err instanceof LLMError) {
-      const error: ApiError = { error: err.message, code: err.code };
-      const status =
-        err.code === "MISSING_API_KEY" ? 503 : err.code === "LLM_TIMEOUT" ? 504 : 500;
-      return NextResponse.json(error, { status });
+    if (err instanceof PMCopilotError) {
+      return NextResponse.json(
+        { error: err.message, code: err.code },
+        { status: err.code === "API_KEY_MISSING" ? 500 : 503 }
+      );
     }
-
-    console.error("[/api/generate] Error inesperado:", err);
-    const error: ApiError = {
-      error: "Ocurrió un error inesperado al generar la propuesta.",
-      code: "UNKNOWN",
-    };
-    return NextResponse.json(error, { status: 500 });
+    console.error("[generate]", err);
+    return NextResponse.json({ error: "Error inesperado al generar la propuesta." }, { status: 500 });
   }
 }

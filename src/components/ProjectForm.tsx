@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { ProjectInput } from "@/types";
+import { ProjectInput } from "@/types";
 
-interface ProjectFormProps {
-  onSubmit: (input: ProjectInput) => Promise<void>;
+interface Props {
+  onSubmit: (input: ProjectInput) => void;
   isLoading: boolean;
 }
 
@@ -12,14 +12,14 @@ const PROJECT_TYPES = [
   "Desarrollo de software",
   "Implementación de sistema",
   "Migración de datos",
-  "Consultoría / análisis",
+  "Consultoría",
   "Transformación digital",
+  "Infraestructura / Cloud",
   "Integración de sistemas",
-  "Infraestructura / cloud",
   "Otro",
 ];
 
-export default function ProjectForm({ onSubmit, isLoading }: ProjectFormProps) {
+export default function ProjectForm({ onSubmit, isLoading }: Props) {
   const [form, setForm] = useState<ProjectInput>({
     description: "",
     projectType: "",
@@ -31,229 +31,221 @@ export default function ProjectForm({ onSubmit, isLoading }: ProjectFormProps) {
     budget: "",
     additionalDocs: "",
   });
-
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof ProjectInput, string>>>({});
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  function validate(): boolean {
+    const newErrors: Partial<Record<keyof ProjectInput, string>> = {};
+    if (!form.description.trim() || form.description.trim().length < 20) {
+      newErrors.description = "Describí el proyecto con al menos 20 caracteres.";
+    }
+    if (!form.projectType) {
+      newErrors.projectType = "Seleccioná un tipo de proyecto.";
+    }
+    if (!form.businessObjective.trim()) {
+      newErrors.businessObjective = "Indicá el objetivo de negocio.";
+    }
+    if (!form.area.trim()) {
+      newErrors.area = "Indicá el área responsable.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await onSubmit(form);
-  };
+    if (validate()) onSubmit(form);
+  }
 
-  const isValid = form.description.trim().length > 20;
+  function set(field: keyof ProjectInput, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Sección principal */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
-          Descripción del proyecto
-        </h2>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Descripción */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          Descripción del proyecto <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          rows={4}
+          placeholder="Ej: Necesitamos migrar nuestro sistema de facturación legacy a una plataforma cloud moderna que permita integrarse con nuestro ERP..."
+          value={form.description}
+          onChange={(e) => set("description", e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          disabled={isLoading}
+        />
+        {errors.description && (
+          <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+        )}
+      </div>
 
-        {/* Descripción — campo principal */}
+      {/* Tipo + Área */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            ¿De qué trata el proyecto? <span className="text-red-500">*</span>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Tipo de proyecto <span className="text-red-500">*</span>
           </label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={4}
-            placeholder="Ej: Necesitamos implementar un sistema de gestión de turnos para el área de RRHH. Actualmente el proceso es manual (Excel + emails). El objetivo es digitalizar y automatizar la asignación de turnos para ~200 empleados, integrar con el sistema de RRHH existente (SAP) y reducir el tiempo de administración semanal."
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            required
-          />
-          <p className="text-xs text-slate-400 mt-1">
-            Mientras más detalle, mejor será la propuesta. Mínimo 20 caracteres.
-            {form.description.length > 0 && (
-              <span className={`ml-2 ${form.description.length < 20 ? "text-red-400" : "text-green-600"}`}>
-                ({form.description.length} caracteres)
-              </span>
-            )}
-          </p>
+          <select
+            value={form.projectType}
+            onChange={(e) => set("projectType", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+          >
+            <option value="">Seleccioná un tipo...</option>
+            {PROJECT_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+          {errors.projectType && (
+            <p className="text-red-500 text-xs mt-1">{errors.projectType}</p>
+          )}
         </div>
-
-        {/* Tipo de proyecto */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Tipo de proyecto
-            </label>
-            <select
-              name="projectType"
-              value={form.projectType}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="">Seleccioná un tipo...</option>
-              {PROJECT_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Área / departamento
-            </label>
-            <input
-              type="text"
-              name="area"
-              value={form.area}
-              onChange={handleChange}
-              placeholder="Ej: RRHH, Finanzas, TI, Operaciones..."
-              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Objetivo de negocio */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Objetivo de negocio
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Área / Departamento <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            name="businessObjective"
-            value={form.businessObjective}
-            onChange={handleChange}
-            placeholder="Ej: Reducir costos operativos, mejorar experiencia del cliente, cumplir regulación..."
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ej: Tecnología, Operaciones, Finanzas..."
+            value={form.area}
+            onChange={(e) => set("area", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
           />
+          {errors.area && (
+            <p className="text-red-500 text-xs mt-1">{errors.area}</p>
+          )}
         </div>
+      </div>
 
-        {/* Sistemas */}
+      {/* Objetivo de negocio */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          Objetivo de negocio <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Ej: Reducir el tiempo de emisión de facturas de 48h a 2h y eliminar errores manuales"
+          value={form.businessObjective}
+          onChange={(e) => set("businessObjective", e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
+        />
+        {errors.businessObjective && (
+          <p className="text-red-500 text-xs mt-1">{errors.businessObjective}</p>
+        )}
+      </div>
+
+      {/* Sistemas + Restricciones */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Sistemas / tecnologías involucradas
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Sistemas / Tecnologías
           </label>
           <input
             type="text"
-            name="systems"
+            placeholder="Ej: SAP, AWS, React, Oracle..."
             value={form.systems}
-            onChange={handleChange}
-            placeholder="Ej: SAP, Salesforce, AWS, React, PostgreSQL, Office 365..."
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => set("systems", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
           />
         </div>
-
-        {/* Restricciones */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
             Restricciones conocidas
           </label>
           <input
             type="text"
-            name="constraints"
+            placeholder="Ej: Sin downtime en producción, equipo de 3 personas..."
             value={form.constraints}
-            onChange={handleChange}
-            placeholder="Ej: Presupuesto máximo $50k, equipo de 3 personas, salir a producción antes de diciembre..."
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => set("constraints", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
           />
         </div>
       </div>
 
-      {/* Sección opcionales */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      {/* Opcionales */}
+      <div>
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          className="text-sm text-blue-600 hover:underline flex items-center gap-1"
         >
-          <span className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs flex items-center justify-center font-bold">2</span>
-            Datos opcionales y documentación técnica
-          </span>
-          <span className={`text-slate-400 transition-transform ${showAdvanced ? "rotate-180" : ""}`}>
-            ▼
-          </span>
+          {showAdvanced ? "▾" : "▸"} Campos opcionales (duración, presupuesto, documentación técnica)
         </button>
+      </div>
 
-        {showAdvanced && (
-          <div className="px-6 pb-6 space-y-5 border-t border-slate-100">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Duración estimada
-                </label>
-                <input
-                  type="text"
-                  name="timeline"
-                  value={form.timeline}
-                  onChange={handleChange}
-                  placeholder="Ej: 6 meses, Q1 2025, 3 sprints..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Presupuesto estimado
-                </label>
-                <input
-                  type="text"
-                  name="budget"
-                  value={form.budget}
-                  onChange={handleChange}
-                  placeholder="Ej: $30.000, sin definir, 500hs..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Documentación técnica adicional por proyecto */}
+      {showAdvanced && (
+        <div className="space-y-4 border-l-2 border-blue-100 pl-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Documentación técnica del proyecto
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Duración estimada
               </label>
-              <p className="text-xs text-slate-500 mb-2">
-                Pegá aquí specs técnicas, requisitos funcionales, diagramas en texto,
-                restricciones detalladas u otro material. El agente lo usará como contexto adicional.
-              </p>
-              <textarea
-                name="additionalDocs"
-                value={form.additionalDocs}
-                onChange={handleChange}
-                rows={8}
-                placeholder="Ej: Requisito funcional RF001: El sistema debe permitir...&#10;Arquitectura actual: servidor on-premise Windows Server 2019...&#10;Integración requerida: API REST con SAP mediante RFC..."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono"
+              <input
+                type="text"
+                placeholder="Ej: 6 meses, 3 sprints..."
+                value={form.timeline}
+                onChange={(e) => set("timeline", e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Presupuesto estimado
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: USD 50.000, sin definir..."
+                value={form.budget}
+                onChange={(e) => set("budget", e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
               />
             </div>
           </div>
-        )}
-      </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Documentación técnica del proyecto
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Pegá aquí requisitos técnicos, especificaciones, diagramas en texto, historias de usuario, etc. El agente los usará como contexto específico de este proyecto.
+            </p>
+            <textarea
+              rows={6}
+              placeholder="Pegá aquí cualquier documentación relevante: especificaciones técnicas, requisitos funcionales, arquitectura, etc."
+              value={form.additionalDocs}
+              onChange={(e) => set("additionalDocs", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+      )}
 
-      {/* Botón de submit */}
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={!isValid || isLoading}
-          className={`
-            flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-white transition-all
-            ${isValid && !isLoading
-              ? "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95"
-              : "bg-slate-300 cursor-not-allowed"
-            }
-          `}
-        >
-          {isLoading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Generando propuesta...
-            </>
-          ) : (
-            <>
-              Generar propuesta
-            </>
-          )}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+      >
+        {isLoading ? (
+          <>
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Generando propuesta...
+          </>
+        ) : (
+          "Generar propuesta"
+        )}
+      </button>
     </form>
   );
 }

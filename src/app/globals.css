@@ -1,40 +1,26 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Estilos base para el contenido Markdown generado por el LLM */
-@layer components {
-  .prose-pm h3 {
-    @apply text-lg font-bold text-slate-800 mt-8 mb-3 pb-2 border-b border-slate-200;
-  }
-  .prose-pm table {
-    @apply w-full text-sm border-collapse mt-3 mb-5;
-  }
-  .prose-pm th {
-    @apply bg-slate-100 text-slate-700 font-semibold px-3 py-2 text-left border border-slate-200;
-  }
-  .prose-pm td {
-    @apply px-3 py-2 border border-slate-200 text-slate-700 align-top;
-  }
-  .prose-pm tr:hover td {
-    @apply bg-slate-50;
-  }
-  .prose-pm ul {
-    @apply list-disc list-inside space-y-1 text-slate-700 mt-2;
-  }
-  .prose-pm p {
-    @apply text-slate-700 leading-relaxed mb-3;
-  }
-  .prose-pm strong {
-    @apply font-semibold text-slate-800;
-  }
-  .prose-pm pre {
-    @apply bg-slate-900 text-green-400 p-4 rounded-lg overflow-x-auto text-xs font-mono mt-3 mb-5;
-  }
-  .prose-pm code {
-    @apply bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-sm font-mono;
-  }
-  .prose-pm pre code {
-    @apply bg-transparent text-green-400 p-0;
-  }
+/* Prose overrides para el resultado del LLM */
+.prose table {
+  font-size: 0.75rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+.prose th, .prose td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  text-align: left;
+}
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+.prose pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  line-height: 1.6;
 }

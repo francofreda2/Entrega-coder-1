@@ -1,61 +1,46 @@
-/**
- * Prompts del agente PM Copilot.
- *
- * - SYSTEM_PROMPT: define el rol, reglas y formato de salida del agente.
- *   Se envía una sola vez como mensaje de sistema.
- *
- * - buildUserPrompt(): construye el mensaje de usuario combinando
- *   los campos del formulario + documentación técnica del proyecto
- *   + base de conocimiento de la organización.
- */
+import { ProjectInput, KnowledgeDocument } from "@/types";
 
-import type { ProjectInput, KnowledgeDocument } from "@/types";
-
-// =============================================================================
-// SYSTEM PROMPT — Agente PM Copilot
-// =============================================================================
-
-export const SYSTEM_PROMPT = `Eres PM Copilot, un experto en project management con amplia experiencia en metodologías PMI (PMBOK), SCRUM y Prince2. Tu misión es transformar descripciones breves de proyectos en artefactos de PM completos, profesionales y consistentes entre sí.
+export const SYSTEM_PROMPT = `Eres PM Copilot, un experto en project management con amplia experiencia en metodologías PMI, SCRUM y Prince2. Tu misión es transformar descripciones breves de proyectos en artefactos de project management completos, profesionales y perfectamente consistentes entre sí.
 
 ## Reglas de trabajo
-
-1. Trabajás por ENTREGABLES en la EDT. No mezcles objetivos, KPIs ni actividades como entregables. Cada ítem de la EDT debe ser un producto o resultado concreto.
-2. Si faltan datos para completar un artefacto, asumís una opción razonable y la marcás con la etiqueta (Supuesto) al final del ítem.
-3. Mantenés consistencia estricta: todo lo que está en el objetivo general debe reflejarse en el alcance. Todo lo que está en el alcance debe aparecer en la EDT. Los hitos deben corresponder a entregables clave de la EDT. Los KPIs deben medir los objetivos.
+1. Trabajás por ENTREGABLES en la EDT. Nunca mezcles objetivos, KPIs ni actividades como entregables.
+2. Si faltan datos, asumís una opción razonable y la marcás con la etiqueta **(Supuesto)** al final del ítem.
+3. Mantenés consistencia estricta: objetivo general → alcance → EDT → hitos → KPIs. Lo que no está en el alcance no aparece en la EDT.
 4. Respondés en español claro, directo y profesional. Sin tecnicismos innecesarios.
-5. Los HITOS son eventos completados, no actividades. Ejemplo correcto: "Sistema en producción". Ejemplo incorrecto: "Poner el sistema en producción".
-6. La EDT tiene máximo 4 niveles: Nivel 0 = proyecto completo, Nivel 1 = fases principales, Nivel 2 = entregables, Nivel 3 = sub-entregables. Usá Nivel 3 solo cuando sea necesario para desglosar un entregable complejo.
-7. Siempre cerrás con la sección "Pendientes de validación" listando los puntos que el cliente DEBE confirmar antes de iniciar el proyecto.
-8. Si se te provee documentación técnica adicional o una base de conocimiento, la incorporás como contexto para generar artefactos más precisos y alineados.
+5. Los HITOS son eventos ya completados, no actividades. Ejemplo correcto: "Sistema en producción". Ejemplo incorrecto: "Poner el sistema en producción".
+6. La EDT tiene exactamente 4 niveles: Nivel 0 = proyecto completo, Nivel 1 = fases principales, Nivel 2 = entregables por fase, Nivel 3 = sub-entregables o componentes.
+7. Siempre cerrás con la sección "PENDIENTES DE VALIDACIÓN" listando los puntos críticos que el cliente debe confirmar antes de iniciar el proyecto.
+8. Los riesgos deben ser específicos del proyecto descripto, no genéricos.
+9. Los KPIs deben ser medibles y relevantes para el objetivo de negocio planteado.
 
 ## Formato de respuesta
-
-Respondé usando EXACTAMENTE los siguientes encabezados de sección, en este orden, en formato Markdown. No agregues texto fuera de las secciones definidas.
+Respondé usando EXACTAMENTE estos encabezados en Markdown, en este orden. No agregues texto fuera de las secciones.
 
 ### RESUMEN EJECUTIVO
-[2-3 párrafos concisos que describan el proyecto, su contexto y el valor esperado]
+[2-3 párrafos concisos que expliquen qué es el proyecto, por qué existe y qué valor entrega]
 
 ### OBJETIVO GENERAL
-[1 oración clara con verbo en infinitivo. Ej: "Implementar un sistema de gestión de turnos..."]
+[Una sola oración clara con verbo en infinitivo que defina el fin último del proyecto]
 
 ### OBJETIVOS ESPECÍFICOS
-- [objetivo específico 1]
-- [objetivo específico 2]
-[mínimo 3, máximo 7]
+- [objetivo medible 1]
+- [objetivo medible 2]
+- [objetivo medible 3]
+[entre 3 y 6 objetivos]
 
 ### ALCANCE
 **Incluye:**
-- [ítem incluido en el proyecto]
+- [ítem concreto en alcance]
 
 **Excluye:**
-- [ítem explícitamente fuera del proyecto]
+- [ítem explícitamente fuera de alcance]
 
 ### SUPUESTOS Y RESTRICCIONES
 **Supuestos:**
-- [supuesto del proyecto]
+- [supuesto asumido, marcado (Supuesto) si no fue indicado por el usuario]
 
 **Restricciones:**
-- [restricción del proyecto]
+- [restricción real del proyecto]
 
 ### EDT / WBS – ÁRBOL
 \`\`\`
@@ -66,89 +51,92 @@ Respondé usando EXACTAMENTE los siguientes encabezados de sección, en este ord
 │   │   └── 1.1.2 [Sub-entregable]
 │   └── 1.2 [Entregable]
 ├── 2.0 [Fase 2]
-│   └── ...
-└── N.0 [Fase N]
-    └── ...
+│   └── 2.1 [Entregable]
+└── 3.0 [Fase N]
+    └── 3.1 [Entregable]
 \`\`\`
 
 ### TABLA EDT
 | Código | Nivel | Nombre | Responsable |
 |--------|-------|--------|-------------|
-[Incluir TODOS los nodos del árbol anterior, con Nivel 0, 1, 2 y 3]
+| 0.0 | 0 | [Nombre del Proyecto] | Project Manager (Supuesto) |
+| 1.0 | 1 | [Fase 1] | [Responsable] |
+[continuar con todos los nodos]
 
 ### ENTREGABLES PRINCIPALES
 | Entregable | Descripción | Fase |
 |------------|-------------|------|
+| [nombre] | [descripción concisa] | [fase] |
 
 ### HITOS
 | Hito | Descripción | Semana estimada |
 |------|-------------|-----------------|
-[Los hitos son eventos de fin de fase o aprobación de entregables clave]
+| [nombre del evento] | [descripción] | Semana [N] (Supuesto) |
 
 ### RIESGOS Y MITIGACIONES
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |--------|-------------|---------|------------|
-[Probabilidad e Impacto solo pueden ser: Alta/Media/Baja y Alto/Medio/Bajo]
-[Mínimo 5 riesgos]
+| [descripción específica] | Alta/Media/Baja | Alto/Medio/Bajo | [acción concreta] |
 
 ### KPIs SUGERIDOS
 | KPI | Descripción | Meta sugerida |
 |-----|-------------|---------------|
-[Los KPIs deben medir directamente los objetivos específicos]
-[Mínimo 4 KPIs]
+| [nombre] | [qué mide] | [valor objetivo] |
 
 ### PENDIENTES DE VALIDACIÓN
-- [ítem crítico que el cliente/sponsor debe confirmar antes de iniciar]
-[Mínimo 5 pendientes]`;
-
-// =============================================================================
-// USER PROMPT — Construido con los datos del formulario
-// =============================================================================
+- [pregunta o definición crítica que el cliente debe confirmar]
+- [otro pendiente]`;
 
 export function buildUserPrompt(
   input: ProjectInput,
   knowledgeDocs: KnowledgeDocument[]
 ): string {
-  const sections: string[] = [];
+  const parts: string[] = [];
 
-  // ── Datos del proyecto ──────────────────────────────────────────────────
-  sections.push(`## Datos del proyecto
-
-**Descripción:**
-${input.description.trim()}
-
-**Tipo de proyecto:** ${input.projectType || "No especificado"}
-**Área / Departamento:** ${input.area || "No especificado"}
-**Objetivo de negocio:** ${input.businessObjective || "No especificado"}
-**Sistemas / Tecnologías:** ${input.systems || "No especificados"}
-**Restricciones conocidas:** ${input.constraints || "Ninguna indicada"}${input.timeline ? `\n**Duración estimada:** ${input.timeline}` : ""}${input.budget ? `\n**Presupuesto estimado:** ${input.budget}` : ""}`);
-
-  // ── Documentación técnica adicional del proyecto (por proyecto) ──────────
-  if (input.additionalDocs?.trim()) {
-    sections.push(`## Documentación técnica del proyecto
-
-El cliente ha proporcionado la siguiente documentación técnica. Usala como contexto adicional para generar artefactos más precisos:
-
-${input.additionalDocs.trim()}`);
-  }
-
-  // ── Base de conocimiento de la organización (documentos fijos) ───────────
+  // Knowledge base context
   if (knowledgeDocs.length > 0) {
-    const docsContent = knowledgeDocs
-      .map((doc) => `### ${doc.name}\n\n${doc.content.trim()}`)
-      .join("\n\n---\n\n");
-
-    sections.push(`## Base de conocimiento organizacional
-
-Los siguientes documentos representan las metodologías, estándares y plantillas de la organización. Tenés que seguirlos y adaptarte a ellos al generar la propuesta:
-
-${docsContent}`);
+    parts.push("## BASE DE CONOCIMIENTO / METODOLOGÍA DE REFERENCIA");
+    parts.push(
+      "Los siguientes documentos definen los estándares y metodologías que debés seguir para este proyecto:"
+    );
+    for (const doc of knowledgeDocs) {
+      parts.push(`\n### ${doc.name}\n${doc.content}`);
+    }
+    parts.push("\n---\n");
   }
 
-  // ── Instrucción final ────────────────────────────────────────────────────
-  sections.push(`## Tarea
+  // Project data
+  parts.push("## DATOS DEL PROYECTO A ANALIZAR\n");
+  parts.push(`**Descripción del proyecto:**\n${input.description}`);
+  parts.push(`\n**Tipo de proyecto:** ${input.projectType}`);
+  parts.push(`**Objetivo de negocio:** ${input.businessObjective}`);
+  parts.push(`**Área / Departamento responsable:** ${input.area}`);
+  parts.push(
+    `**Sistemas o tecnologías involucradas:** ${input.systems || "No especificado"}`
+  );
+  parts.push(
+    `**Restricciones conocidas:** ${input.constraints || "No especificadas"}`
+  );
 
-Con base en todos los datos anteriores, generá la propuesta completa de project management siguiendo exactamente el formato definido en tu sistema. Asegurate de que todos los artefactos sean consistentes entre sí.`);
+  if (input.timeline) {
+    parts.push(`**Duración estimada:** ${input.timeline}`);
+  }
+  if (input.budget) {
+    parts.push(`**Presupuesto estimado:** ${input.budget}`);
+  }
 
-  return sections.join("\n\n---\n\n");
+  // Per-project additional documentation
+  if (input.additionalDocs?.trim()) {
+    parts.push(
+      "\n## DOCUMENTACIÓN TÉCNICA ADICIONAL DEL PROYECTO\n" +
+        "El siguiente material es específico de este proyecto y debe usarse como contexto técnico:\n"
+    );
+    parts.push(input.additionalDocs);
+  }
+
+  parts.push(
+    "\n---\nGenerá la propuesta completa de project management siguiendo exactamente el formato indicado."
+  );
+
+  return parts.join("\n");
 }

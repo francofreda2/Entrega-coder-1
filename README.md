@@ -1,166 +1,79 @@
 # PM Copilot
 
-Asistente basado en LLM para transformar descripciones breves de proyectos en artefactos de project management completos y profesionales.
+Asistente basado en IA (Claude de Anthropic) para transformar descripciones simples de proyectos en artefactos completos de project management.
 
-## ¿Qué genera?
-
-A partir de una descripción simple del proyecto, PM Copilot produce:
+## Qué genera
 
 - Resumen ejecutivo
 - Objetivo general y específicos
 - Alcance (incluye / excluye)
 - Supuestos y restricciones
-- EDT/WBS en árbol ASCII
-- Tabla EDT (Nivel 0 al 3)
+- EDT/WBS en árbol ASCII + tabla
 - Entregables principales
-- Hitos del proyecto
-- Riesgos + mitigaciones
+- Hitos
+- Riesgos y mitigaciones
 - KPIs sugeridos
 - Pendientes de validación
 
-## Stack
+## Requisitos
 
-- **Next.js 15** (App Router) + TypeScript
-- **Tailwind CSS**
-- **Anthropic API** (Claude) — llamada server-side via API route
-- **Persistencia local** — archivos JSON en `data/` (sin base de datos)
+- Node.js 18 o superior
+- Una API key de Anthropic ([obtenerla acá](https://console.anthropic.com/))
 
----
-
-## Cómo correr el proyecto localmente
-
-### 1. Prerequisitos
-
-- Node.js v18 o superior
-- Una API key de Anthropic ([obtenerla aquí](https://console.anthropic.com))
-
-### 2. Instalar dependencias
+## Instalación y uso local
 
 ```bash
+# 1. Clonar el repositorio
+git clone <url-del-repo>
+cd <nombre-del-repo>
+
+# 2. Instalar dependencias
 npm install
-```
 
-### 3. Configurar variables de entorno
-
-Copiá el archivo de ejemplo y completá tu clave:
-
-```bash
+# 3. Configurar la API key
 cp .env.example .env.local
-```
+# Editar .env.local y pegar tu ANTHROPIC_API_KEY
 
-Editá `.env.local`:
-
-```env
-ANTHROPIC_API_KEY=sk-ant-...tu-clave-aquí...
-LLM_MODEL=claude-sonnet-4-6
-```
-
-### 4. Correr en desarrollo
-
-```bash
+# 4. Correr en modo desarrollo
 npm run dev
+
+# 5. Abrir en el navegador
+# http://localhost:3000
 ```
-
-Abrí [http://localhost:3000](http://localhost:3000) en tu navegador.
-
-### 5. Build de producción (local)
-
-```bash
-npm run build
-npm start
-```
-
----
-
-## Deploy en Vercel (producción)
-
-### Paso 1: Crear cuenta en Vercel
-
-1. Ir a [vercel.com](https://vercel.com)
-2. Hacer clic en **"Sign Up"** → **"Continue with GitHub"**
-3. Autorizar a Vercel a acceder a tus repositorios
-
-### Paso 2: Importar el proyecto
-
-1. En el dashboard de Vercel, clic en **"Add New… → Project"**
-2. Buscar el repositorio `Entrega-coder-1`
-3. Clic en **"Import"**
-4. En la configuración, dejar todo por defecto (Vercel detecta Next.js automáticamente)
-
-### Paso 3: Configurar las variables de entorno
-
-Antes de hacer deploy, en la sección **"Environment Variables"**:
-
-| Variable | Valor |
-|---|---|
-| `ANTHROPIC_API_KEY` | `sk-ant-...tu-clave...` |
-| `LLM_MODEL` | `claude-sonnet-4-6` (opcional) |
-
-### Paso 4: Deploy
-
-Clic en **"Deploy"**. En ~2 minutos tenés la URL pública.
-
-Cada vez que hagas `git push` al branch principal, Vercel redespliega automáticamente.
-
-> **Importante sobre el historial en Vercel:** El storage en JSON funciona localmente. En Vercel (serverless), los archivos `data/` no persisten entre deploys. Para producción real, migrar a una base de datos (ej: Vercel Postgres, PlanetScale, Upstash Redis). Ver sección "Próximos pasos".
-
----
 
 ## Estructura del proyecto
 
 ```
 src/
-├── app/
-│   ├── page.tsx                  # Home: formulario + resultado
-│   ├── history/page.tsx          # Historial de propuestas
-│   ├── knowledge/page.tsx        # Base de conocimiento
+├── app/                    # Pages y API routes (Next.js App Router)
+│   ├── page.tsx            # Home: formulario + resultado
+│   ├── history/            # Historial de propuestas
+│   ├── settings/           # Base de conocimiento
 │   └── api/
-│       ├── generate/route.ts     # POST → llama al LLM
-│       ├── proposals/route.ts    # GET → lista historial
-│       ├── proposals/[id]/       # GET → propuesta por ID
-│       ├── knowledge/route.ts    # GET/POST → base de conocimiento
-│       └── knowledge/[id]/       # DELETE → eliminar documento
-├── components/
-│   ├── ProjectForm.tsx           # Formulario de entrada
-│   ├── ProposalResult.tsx        # Renderiza resultado + export
-│   └── KnowledgePanel.tsx        # Gestiona base de conocimiento
-├── lib/
-│   ├── llm.ts                    # Adapter Anthropic (intercambiable)
-│   ├── prompts.ts                # System prompt + user prompt builder
-│   └── storage.ts                # Capa de persistencia JSON
-└── types/
-    └── index.ts                  # Interfaces TypeScript centrales
-data/
-    proposals.json                # Historial (creado en runtime, gitignored)
-    knowledge.json                # Base de conocimiento (creado en runtime, gitignored)
+│       ├── generate/       # POST: genera propuesta con LLM
+│       ├── proposals/      # GET: historial
+│       └── knowledge/      # GET/POST/DELETE: base de conocimiento
+├── components/             # Componentes React reutilizables
+├── lib/                    # Lógica de negocio
+│   ├── llm.ts              # Adapter Anthropic (intercambiable)
+│   ├── prompts.ts          # System prompt + builder de user prompt
+│   ├── storage.ts          # Persistencia en JSON local
+│   └── errors.ts           # Errores tipados
+└── types/                  # Interfaces TypeScript
+data/                       # Datos locales (no se suben a git)
+├── proposals.json          # Historial de propuestas
+└── knowledge.json          # Base de conocimiento
 ```
 
----
+## Variables de entorno
 
-## Cambiar el modelo de Claude
+| Variable | Descripción |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | API key de Anthropic (requerida) |
 
-En `.env.local`, cambiar `LLM_MODEL`:
+## Deployment en Vercel
 
-```env
-# Más potente, más lento y más caro
-LLM_MODEL=claude-opus-4-6
-
-# Balanceado (default)
-LLM_MODEL=claude-sonnet-4-6
-
-# Más rápido y económico
-LLM_MODEL=claude-haiku-4-5-20251001
-```
-
-No hay que tocar código.
-
----
-
-## Próximos pasos (post-MVP)
-
-- [ ] Migrar storage a base de datos para persistencia real en producción (ej: Vercel Postgres)
-- [ ] Agregar streaming de la respuesta del LLM para mejor UX
-- [ ] Parsear el Markdown para llenar campos estructurados (filtros, búsqueda)
-- [ ] Autenticación de usuario (NextAuth)
-- [ ] Templates de proyecto reutilizables
-- [ ] Exportar a DOCX / PDF
+1. Hacer fork o push del repo a GitHub
+2. Ir a [vercel.com](https://vercel.com) → New Project → importar el repo
+3. En "Environment Variables" agregar `ANTHROPIC_API_KEY`
+4. Deploy → listo
