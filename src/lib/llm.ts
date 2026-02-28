@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { ApiKeyMissingError, EmptyResponseError, LLMTimeoutError } from "./errors";
 
 // Adapter abstraído: cambiar modelo o proveedor acá sin tocar el resto
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 8000;
 const TIMEOUT_MS = 120_000;
 

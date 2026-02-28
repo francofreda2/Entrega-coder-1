@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
         { status: err.code === "API_KEY_MISSING" ? 500 : 503 }
       );
     }
-    console.error("[generate]", err);
-    return NextResponse.json({ error: "Error inesperado al generar la propuesta." }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[generate]", message, err);
+    return NextResponse.json({ error: `Error inesperado al generar la propuesta: ${message}` }, { status: 500 });
   }
 }

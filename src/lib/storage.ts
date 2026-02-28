@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import { StoredProposal, KnowledgeDocument } from "@/types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = process.env.VERCEL
+  ? "/tmp"
+  : path.join(process.cwd(), "data");
 const PROPOSALS_FILE = path.join(DATA_DIR, "proposals.json");
 const KNOWLEDGE_FILE = path.join(DATA_DIR, "knowledge.json");
 
